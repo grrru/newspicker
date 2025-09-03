@@ -25,9 +25,9 @@ func DoLogin(ctx context.Context, id, pw, url string) error {
 	selMyPage := `a[href="/management/operation/myPage"]`
 	if err := chromedp.Run(wctx,
 		chromedp.WaitVisible(selMyPage, chromedp.ByQuery),
-	); err == nil {
-		return nil
+	); err != nil {
+		return errors.New("login timeout: my page not visible")
 	}
 
-	return errors.New("login timeout: my page not visible")
+	return nil
 }
