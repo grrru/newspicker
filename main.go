@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"newspicker/login"
 	"os"
 	"time"
 
@@ -18,9 +19,9 @@ const (
 func main() {
 	_ = godotenv.Load()
 
-	id := os.Getenv("NEWSPICK_ID")
-	pw := os.Getenv("NEWSPICK_PW")
-	if id == "" || pw == "" {
+	NEWSPICK_ID := os.Getenv("NEWSPICK_ID")
+	NEWSPICK_PW := os.Getenv("NEWSPICK_PW")
+	if NEWSPICK_ID == "" || NEWSPICK_PW == "" {
 		log.Fatal("환경변수 NEWSPICK_ID/NEWSPICK_PW 가 필요합니다 (.env 파일 확인)")
 	}
 
@@ -52,21 +53,5 @@ func main() {
 		}
 	})
 
-	var ok bool
-	if err := chromedp.Run(ctx,
-		chromedp.Navigate(NEWSPICK_URL),
-		chromedp.WaitVisible(`input[name="id"]`, chromedp.ByQuery),
-		chromedp.SendKeys(`input[name="id"]`, id, chromedp.ByQuery),
-		chromedp.SendKeys(`input[name="password"]`, pw, chromedp.ByQuery),
-		chromedp.Click(`.btn-confirm`, chromedp.ByQuery),
-		chromedp.Sleep(3*time.Second), // 로그인 대기
-		chromedp.EvaluateAsDevTools(`!!document.querySelector("section.section01")`, &ok),
-	); err != nil {
-		log.Fatalln("Login Fail")
-		return
-	}
-
-	if ok {
-		log.Println("LOGIN SUCCESS")
-	}
+	login.Login(ctx, NEWSPICK_ID, NEWSPICK_PW, NEWSPICK_URL)
 }
