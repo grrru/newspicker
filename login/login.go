@@ -2,30 +2,32 @@ package login
 
 import (
 	"context"
-	"log"
+	"errors"
 	"time"
 
 	"github.com/chromedp/chromedp"
 )
 
-func Login(ctx context.Context, id, pw, url string) {
-	var ok bool
+func DoLogin(ctx context.Context, id, pw, url string) error {
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
 		chromedp.WaitVisible(`input[name="id"]`, chromedp.ByQuery),
 		chromedp.SendKeys(`input[name="id"]`, id, chromedp.ByQuery),
 		chromedp.SendKeys(`input[name="password"]`, pw, chromedp.ByQuery),
 		chromedp.Click(`.btn-confirm`, chromedp.ByQuery),
-		chromedp.Sleep(3*time.Second), // 로그인 대기
-		chromedp.EvaluateAsDevTools(`!!document.querySelector("section.section01")`, &ok),
 	); err != nil {
-		log.Fatalln("Login Fail")
-		return
+		return errors.New("login form submit failed")
 	}
 
-	if ok {
-		log.Println("LOGIN SUCCESS")
-	} else {
-		log.Fatalln("After login Fail")
+	wctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	selMyPage := `a[href="/management/operation/myPage"]`
+	if err := chromedp.Run(wctx,
+		chromedp.WaitVisible(selMyPage, chromedp.ByQuery),
+	); err == nil {
+		return nil
 	}
+
+	return errors.New("login timeout: my page not visible")
 }

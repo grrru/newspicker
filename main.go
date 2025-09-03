@@ -53,5 +53,11 @@ func main() {
 		}
 	})
 
-	login.Login(ctx, NEWSPICK_ID, NEWSPICK_PW, NEWSPICK_URL)
+	err := login.DoLogin(ctx, NEWSPICK_ID, NEWSPICK_PW, NEWSPICK_URL)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	log.Print("login success")
 }
