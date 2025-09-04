@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/chromedp/chromedp"
@@ -29,5 +30,6 @@ func DoLogin(ctx context.Context, id, pw, url string) error {
 		return errors.New("login timeout: my page not visible")
 	}
 
+	log.Print("login success")
 	return nil
 }
