@@ -12,14 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Download previous queue.json
-        uses: dawidd6/action-download-artifact@v3
         with:
-          name: queue-file
-          path: .
-          workflow_conclusion: success
-          if_no_artifact_found: ignore
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check queue status
         run: |
@@ -75,12 +69,19 @@ jobs:
           go run main.go
           echo "✅ 뉴스 포스팅 완료!"
 
-      - name: Save queue.json
-        uses: actions/upload-artifact@v4
-        with:
-          name: queue-file
-          path: queue.json
-          retention-days: 90
+      - name: Commit updated queue.json
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet queue.json; then
+            echo "📋 큐 파일에 변경사항이 없습니다."
+          else
+            echo "📋 큐 파일이 업데이트되었습니다. 커밋합니다."
+            git add queue.json
+            git commit -m "🤖 Auto update queue.json after posting $(date '+%Y-%m-%d %H:%M:%S')"
+            git push
+          fi
 
       - name: Result
         run: |
