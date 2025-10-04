@@ -29,13 +29,27 @@ func Crawling(cnt int) ([]model.ProfitItem, error) {
 		log.Fatal("need NEWSPICK_ID/NEWSPICK_PW (check .env)")
 	}
 
-	headless := os.Getenv("HEADLESS") == "1"
+	headless := os.Getenv("HEADLESS") != "0"
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", headless),
 		chromedp.Flag("disable-gpu", true),
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-backgrounding-occluded-windows", true),
+		chromedp.Flag("disable-renderer-backgrounding", true),
+		chromedp.Flag("disable-features", "TranslateUI"),
+		chromedp.Flag("disable-ipc-flooding-protection", true),
+		chromedp.Flag("disable-web-security", true),
+		chromedp.Flag("disable-extensions", true),
+		chromedp.Flag("disable-plugins", true),
+		chromedp.Flag("disable-default-apps", true),
+		chromedp.Flag("disable-sync", true),
+		chromedp.Flag("no-first-run", true),
+		chromedp.Flag("no-default-browser-check", true),
+		chromedp.Flag("remote-debugging-port", "9222"),
+		chromedp.WindowSize(1920, 1080),
 	)
 
 	alloc, cancel := chromedp.NewExecAllocator(context.Background(), opts...)

@@ -29,12 +29,19 @@ jobs:
       - name: Download go mod
         run: go mod download
 
-      - name: Install Chrome
+      - name: Install Chrome and dependencies
         run: |
+          # Chrome 설치
           wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
+          
+          # 가상 디스플레이 설정 (필요시)
+          sudo apt-get install -y xvfb
+          
+          # Chrome 버전 확인
+          google-chrome --version
 
       - name: Execute Posting
         env:
@@ -48,12 +55,16 @@ jobs:
           NEWSPICK_ID: ${{ secrets.NEWSPICK_ID }}
           NEWSPICK_PW: ${{ secrets.NEWSPICK_PW }}
           
-          # 크롤링 설정
+          # 크롤링 설정 (GitHub Actions에서는 항상 headless)
           HEADLESS: "1"
+          DISPLAY: ":99"
         run: |
-          echo "뉴스 포스팅 시작..."
+          # 가상 디스플레이 시작 (백그라운드)
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          
+          echo "🚀 뉴스 포스팅 시작..."
           go run main.go
-          echo "뉴스 포스팅 완료!"
+          echo "✅ 뉴스 포스팅 완료!"
 
       - name: Save queue.json
         uses: actions/upload-artifact@v4
