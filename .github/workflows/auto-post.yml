@@ -1,0 +1,71 @@
+name: Auto Post to X (Twitter)
+
+on:
+  schedule:
+    # 매일 오전 00시 (UTC 기준, 한국시간 오전 9시)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  auto-post:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download queue.json
+        uses: actions/download-artifact@v4
+        with:
+          name: queue-file
+          path: .
+        continue-on-error: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Download go mod
+        run: go mod download
+
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Execute Posting
+        env:
+          # X API OAuth 1.0a 토큰
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          
+          # 뉴스픽 로그인 정보
+          NEWSPICK_ID: ${{ secrets.NEWSPICK_ID }}
+          NEWSPICK_PW: ${{ secrets.NEWSPICK_PW }}
+          
+          # 크롤링 설정
+          HEADLESS: "1"
+        run: |
+          echo "뉴스 포스팅 시작..."
+          go run main.go
+          echo "뉴스 포스팅 완료!"
+
+      - name: Save queue.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-file
+          path: queue.json
+          retention-days: 90
+
+      - name: Result
+        run: |
+          echo "자동 포스팅 작업이 완료되었습니다."
+          echo "실행 시간: $(date)"
+          if [ -f queue.json ]; then
+            echo "남은 큐 개수: $(jq length queue.json)"
+          fi
