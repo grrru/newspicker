@@ -13,12 +13,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download queue.json
-        uses: actions/download-artifact@v4
+      - name: Download previous queue.json
+        uses: dawidd6/action-download-artifact@v3
         with:
           name: queue-file
           path: .
-        continue-on-error: true
+          workflow_conclusion: success
+          if_no_artifact_found: ignore
+
+      - name: Check queue status
+        run: |
+          if [ -f queue.json ]; then
+            echo "📋 기존 큐 파일 발견!"
+            echo "📊 현재 큐 개수: $(jq length queue.json)"
+          else
+            echo "📋 큐 파일 없음 - 새로 크롤링 예정"
+          fi
 
       - name: Set up Go
         uses: actions/setup-go@v4
