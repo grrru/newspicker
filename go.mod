@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/chromedp/sysutil v1.1.0 // indirect
+	github.com/dghubble/oauth1 v0.7.3 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250813233538-9b1f9ea2e11b // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
