@@ -1,7 +1,7 @@
 name: Auto Post to X (Twitter)
 
 on:
-  schedule:
+  # schedule:
     # - cron: '0 */8 * * *'
   workflow_dispatch: # 수동 실행 가능
 
